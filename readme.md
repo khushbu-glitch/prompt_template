@@ -7,6 +7,7 @@ A production-ready React TypeScript storefront application using the Shopify Sto
 - ✅ **React 18 + TypeScript** - Type-safe development with latest React features
 - ✅ **Shopify Storefront API Integration** - Seamless product fetching with GraphQL
 - ✅ **Shopping Cart** - Full-featured cart with add/remove, quantities, and localStorage persistence
+- ✅ **Razorpay Payment Gateway** - Secure checkout with success/failure handling and mock mode
 - ✅ **Mock Data Fallback** - Automatic fallback to mock data when API is unavailable
 - ✅ **Secure API Key Handling** - Environment variable-based configuration
 - ✅ **Loading States** - User-friendly loading indicators
@@ -26,17 +27,23 @@ shopify-storefront-app/
 │   ├── components/
 │   │   ├── ProductGrid.tsx      # Main grid with renderProductGrid()
 │   │   ├── ProductCard.tsx      # Individual product display
-│   │   ├── Cart.tsx             # Shopping cart panel
+│   │   ├── Cart.tsx             # Shopping cart with checkout
 │   │   ├── CartIcon.tsx         # Cart icon with badge
+│   │   ├── PaymentSuccess.tsx   # Payment success modal
+│   │   ├── PaymentFailure.tsx   # Payment failure modal
+│   │   ├── PaymentProcessing.tsx # Payment processing state
 │   │   ├── LoadingSpinner.tsx   # Loading state component
 │   │   └── ErrorMessage.tsx     # Error state component
 │   ├── context/
-│   │   └── CartContext.tsx      # Cart state (addToCart, getCartTotal)
+│   │   ├── CartContext.tsx      # Cart state (addToCart, getCartTotal)
+│   │   └── RazorpayContext.tsx  # Payment functions
 │   ├── types/
 │   │   ├── shopify.ts           # TypeScript interfaces
-│   │   └── cart.ts              # Cart type definitions
+│   │   ├── cart.ts              # Cart type definitions
+│   │   └── razorpay.ts          # Razorpay type definitions
 │   ├── utils/
-│   │   └── mockData.ts          # Mock product data
+│   │   ├── mockData.ts          # Mock product data
+│   │   └── razorpayLoader.ts    # Razorpay script loader
 │   ├── App.tsx                  # Main application component
 │   ├── App.css                  # Application styles
 │   ├── main.tsx                 # Application entry point
@@ -45,7 +52,8 @@ shopify-storefront-app/
 ├── tsconfig.json
 ├── vite.config.ts
 ├── CART_DOCUMENTATION.md        # Shopping cart documentation
-└── .env.example                 # Example environment variables
+├── RAZORPAY_DOCUMENTATION.md    # Payment integration guide
+└── .env.example.txt             # Example environment variables
 ```
 
 ## Getting Started
@@ -82,9 +90,10 @@ Edit `.env` and add your credentials:
 ```env
 VITE_SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
 VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN=your_storefront_access_token_here
+VITE_RAZORPAY_KEY_ID=your_razorpay_key_id_here
 ```
 
-**Note:** If you don't configure the API credentials, the app will automatically use mock data.
+**Note:** If you don't configure the credentials, the app will automatically use mock data and mock payments.
 
 ### Getting Shopify API Credentials
 
@@ -94,6 +103,16 @@ VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN=your_storefront_access_token_here
 4. Configure **Storefront API** scopes (enable product read access)
 5. Install the app to your store
 6. Copy the **Storefront Access Token** and **Store Domain**
+
+### Getting Razorpay API Keys
+
+1. Sign up at [https://razorpay.com](https://razorpay.com)
+2. Go to Dashboard → Settings → API Keys
+3. Generate Test or Live API Keys
+4. Copy the **Key ID** (starts with `rzp_test_` or `rzp_live_`)
+5. Add to `.env` as `VITE_RAZORPAY_KEY_ID`
+
+**Note:** The app works with mock payments if Razorpay is not configured.
 
 ### Running the Application
 
@@ -180,7 +199,48 @@ const { getCartTotal } = useCart();
 const total = getCartTotal(); // Returns number
 ```
 
+### `initRazorpayCheckout(amount, currency, orderDetails)`
+
+Located in `src/context/RazorpayContext.tsx`, this function:
+
+- Initializes and launches Razorpay payment checkout
+- Handles real payments or falls back to mock mode
+- Validates amount and configuration
+- Returns Promise for async handling
+
+**Usage:**
+
+```typescript
+import { useRazorpay } from './context/RazorpayContext';
+
+const { initRazorpayCheckout } = useRazorpay();
+await initRazorpayCheckout(499.99, 'INR', {
+  name: 'Premium Store',
+  description: 'Purchase of items'
+});
+```
+
+### `handlePaymentSuccess(response)`
+
+Located in `src/context/RazorpayContext.tsx`, this function:
+
+- Processes successful payment responses
+- Updates payment status
+- Stores payment details
+- Announces to screen readers
+
+### `handlePaymentFailure(error)`
+
+Located in `src/context/RazorpayContext.tsx`, this function:
+
+- Handles payment failures
+- Displays error messages
+- Provides retry options
+- Logs errors appropriately
+
 > **📖 See [CART_DOCUMENTATION.md](CART_DOCUMENTATION.md) for complete shopping cart documentation**
+> 
+> **📖 See [RAZORPAY_DOCUMENTATION.md](RAZORPAY_DOCUMENTATION.md) for complete payment integration guide**
 
 ## Accessibility Features
 

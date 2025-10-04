@@ -17,20 +17,29 @@
 
 The app will automatically use mock product data - no API configuration needed!
 
-## Using Real Shopify Data (Optional)
+## Using Real Shopify Data & Razorpay (Optional)
 
 1. **Create `.env` file:**
    ```bash
    cp .env.example .env
    ```
 
-2. **Add your Shopify credentials to `.env`:**
+2. **Add your credentials to `.env`:**
    ```env
+   # Shopify (Optional - uses mock data if not set)
    VITE_SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
    VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN=your_token_here
+   
+   # Razorpay (Optional - uses mock payment if not set)
+   VITE_RAZORPAY_KEY_ID=rzp_test_your_key_id_here
    ```
 
-3. **Restart the dev server:**
+3. **Get Razorpay API Keys:**
+   - Sign up at https://razorpay.com
+   - Go to Dashboard > Settings > API Keys
+   - Use Test Key (`rzp_test_`) for development
+
+4. **Restart the dev server:**
    ```bash
    npm run dev
    ```
@@ -59,6 +68,21 @@ The app will automatically use mock product data - no API configuration needed!
   - Auto-updates on changes
   - Type-safe
 
+- **`initRazorpayCheckout(amount, currency, config)`** - Located in `src/context/RazorpayContext.tsx`
+  - Launches Razorpay payment
+  - Mock mode if not configured
+  - Full error handling
+
+- **`handlePaymentSuccess(response)`** - Located in `src/context/RazorpayContext.tsx`
+  - Processes successful payments
+  - Updates order status
+  - Clears cart
+
+- **`handlePaymentFailure(error)`** - Located in `src/context/RazorpayContext.tsx`
+  - Handles payment failures
+  - Provides retry option
+  - User-friendly errors
+
 ### ✅ Production-Ready Features
 
 - **Secure API Key Handling** - Environment variables only
@@ -67,8 +91,10 @@ The app will automatically use mock product data - no API configuration needed!
 - **Accessibility** - WCAG 2.1 compliant, ARIA attributes
 - **Clean Structure** - Organized components and utilities
 - **Mock Data** - 6 realistic products with images
+- **Mock Payments** - Test checkout without real payment setup
 - **TypeScript** - Full type safety
 - **Responsive Design** - Works on mobile, tablet, desktop
+- **Payment Gateway** - Razorpay Standard Checkout integration
 
 ## File Structure
 
@@ -120,6 +146,8 @@ const {
 ```
 
 **📖 See [CART_DOCUMENTATION.md](CART_DOCUMENTATION.md) for complete cart documentation**
+
+**📖 See [RAZORPAY_DOCUMENTATION.md](RAZORPAY_DOCUMENTATION.md) for payment integration guide**
 
 ## Accessibility Testing
 

@@ -1,6 +1,10 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
+import { useRazorpay } from '../context/RazorpayContext';
 import { formatPrice } from '../api/shopify';
+import { PaymentSuccess } from './PaymentSuccess';
+import { PaymentFailure } from './PaymentFailure';
+import { PaymentProcessing } from './PaymentProcessing';
 
 interface CartProps {
   isOpen: boolean;
@@ -10,10 +14,62 @@ interface CartProps {
 /**
  * Cart Component
  * Displays shopping cart with items, quantities, and total
+ * Integrated with Razorpay payment processing
  * Fully accessible with ARIA attributes and keyboard navigation
  */
 export const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
   const { cart, removeFromCart, updateQuantity, clearCart, getCartTotal } = useCart();
+  const { 
+    initRazorpayCheckout, 
+    paymentStatus, 
+    paymentDetails, 
+    clearPaymentStatus,
+    isProcessing 
+  } = useRazorpay();
+
+  /**
+   * Handle checkout button click
+   * Initiates Razorpay payment flow
+   */
+  const handleCheckout = async () => {
+    const total = getCartTotal();
+    
+    if (total <= 0) {
+      alert('Your cart is empty');
+      return;
+    }
+
+    try {
+      await initRazorpayCheckout(total, 'INR', {
+        name: 'Premium Store',
+        description: `Purchase of ${cart.itemCount} item${cart.itemCount !== 1 ? 's' : ''}`,
+        prefill: {
+          name: '',
+          email: '',
+          contact: '',
+        },
+      });
+    } catch (error) {
+      console.error('Checkout error:', error);
+    }
+  };
+
+  /**
+   * Handle successful payment completion
+   */
+  const handlePaymentComplete = () => {
+    clearCart();
+    clearPaymentStatus();
+    onClose();
+  };
+
+  /**
+   * Handle payment retry
+   */
+  const handlePaymentRetry = () => {
+    clearPaymentStatus();
+    handleCheckout();
+  };
 
   // Close on Escape key
   React.useEffect(() => {
@@ -199,17 +255,40 @@ export const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
           <div className="cart-footer">
             <div className="cart-total">
               <span className="cart-total__label">Total:</span>
-              <span className="cart-total__amount" aria-label={`Total: ${formatPrice(total.toString(), 'USD')}`}>
-                {formatPrice(total.toString(), 'USD')}
+              <span className="cart-total__amount" aria-label={`Total: ${formatPrice(total.toString(), 'INR')}`}>
+                {formatPrice(total.toString(), 'INR')}
               </span>
             </div>
-            <button className="cart-checkout" aria-label="Proceed to checkout">
-              Proceed to Checkout
+            <button 
+              className="cart-checkout" 
+              onClick={handleCheckout}
+              disabled={isProcessing}
+              aria-label="Proceed to checkout and make payment"
+            >
+              {isProcessing ? 'Processing...' : 'Proceed to Checkout'}
             </button>
-            <p className="cart-footer__note">Shipping and taxes calculated at checkout</p>
+            <p className="cart-footer__note">Secure payment via Razorpay</p>
           </div>
         )}
       </aside>
+
+      {/* Payment Status Modals */}
+      {paymentStatus === 'processing' && <PaymentProcessing />}
+      
+      {paymentStatus === 'success' && paymentDetails && (
+        <PaymentSuccess 
+          paymentDetails={paymentDetails} 
+          onClose={handlePaymentComplete} 
+        />
+      )}
+      
+      {paymentStatus === 'failure' && (
+        <PaymentFailure 
+          paymentDetails={paymentDetails}
+          onRetry={handlePaymentRetry}
+          onClose={clearPaymentStatus}
+        />
+      )}
     </>
   );
 };
