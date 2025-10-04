@@ -1,17 +1,11 @@
-import React, { useContext, useState } from 'react';
-import { CartContext } from '../context/CartContext';
+import React, { useState } from 'react';
+import { useCart } from '../context/useCart';
 import { initRazorpayCheckout } from '../services/razorpay';
 import './Cart.css';
 
 const Cart: React.FC = () => {
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
-  const cartContext = useContext(CartContext);
-
-  if (!cartContext) {
-    return null;
-  }
-
-  const { cartItems, getCartTotal } = cartContext;
+  const { cartItems, getCartTotal } = useCart();
 
   const handlePaymentSuccess = (response: any) => {
     console.log('Payment successful:', response);
