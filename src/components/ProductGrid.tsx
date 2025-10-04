@@ -1,12 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Product } from '../types/product';
 import { fetchProducts } from '../services/shopify';
+import { CartContext } from '../context/CartContext';
 import './ProductGrid.css';
 
 const ProductGrid: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const cartContext = useContext(CartContext);
+
+  if (!cartContext) {
+    throw new Error('ProductGrid must be used within a CartProvider');
+  }
+
+  const { addToCart } = cartContext;
 
   useEffect(() => {
     const getProducts = async () => {
@@ -38,6 +46,7 @@ const ProductGrid: React.FC = () => {
               {product.priceRange.minVariantPrice.amount}{' '}
               {product.priceRange.minVariantPrice.currencyCode}
             </p>
+            <button onClick={() => addToCart(product)}>Add to Cart</button>
           </div>
         ))}
       </div>
