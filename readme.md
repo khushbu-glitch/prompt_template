@@ -6,6 +6,7 @@ A production-ready React TypeScript storefront application using the Shopify Sto
 
 - ✅ **React 18 + TypeScript** - Type-safe development with latest React features
 - ✅ **Shopify Storefront API Integration** - Seamless product fetching with GraphQL
+- ✅ **Shopping Cart** - Full-featured cart with add/remove, quantities, and localStorage persistence
 - ✅ **Mock Data Fallback** - Automatic fallback to mock data when API is unavailable
 - ✅ **Secure API Key Handling** - Environment variable-based configuration
 - ✅ **Loading States** - User-friendly loading indicators
@@ -25,10 +26,15 @@ shopify-storefront-app/
 │   ├── components/
 │   │   ├── ProductGrid.tsx      # Main grid with renderProductGrid()
 │   │   ├── ProductCard.tsx      # Individual product display
+│   │   ├── Cart.tsx             # Shopping cart panel
+│   │   ├── CartIcon.tsx         # Cart icon with badge
 │   │   ├── LoadingSpinner.tsx   # Loading state component
 │   │   └── ErrorMessage.tsx     # Error state component
+│   ├── context/
+│   │   └── CartContext.tsx      # Cart state (addToCart, getCartTotal)
 │   ├── types/
-│   │   └── shopify.ts           # TypeScript interfaces
+│   │   ├── shopify.ts           # TypeScript interfaces
+│   │   └── cart.ts              # Cart type definitions
 │   ├── utils/
 │   │   └── mockData.ts          # Mock product data
 │   ├── App.tsx                  # Main application component
@@ -38,6 +44,7 @@ shopify-storefront-app/
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
+├── CART_DOCUMENTATION.md        # Shopping cart documentation
 └── .env.example                 # Example environment variables
 ```
 
@@ -136,6 +143,44 @@ Located in `src/components/ProductGrid.tsx`, this function:
 - Handles empty states
 - Includes proper ARIA attributes for accessibility
 - Returns semantic HTML with role attributes
+
+### `addToCart(product, quantity)`
+
+Located in `src/context/CartContext.tsx`, this function:
+
+- Adds products to the shopping cart
+- Validates product availability
+- Updates quantity if product already exists
+- Persists cart to localStorage
+- Announces changes to screen readers
+
+**Usage:**
+
+```typescript
+import { useCart } from './context/CartContext';
+
+const { addToCart } = useCart();
+addToCart(product, 1);
+```
+
+### `getCartTotal()`
+
+Located in `src/context/CartContext.tsx`, this function:
+
+- Returns the total price of all cart items
+- Automatically updates on cart changes
+- Type-safe return value
+
+**Usage:**
+
+```typescript
+import { useCart } from './context/CartContext';
+
+const { getCartTotal } = useCart();
+const total = getCartTotal(); // Returns number
+```
+
+> **📖 See [CART_DOCUMENTATION.md](CART_DOCUMENTATION.md) for complete shopping cart documentation**
 
 ## Accessibility Features
 

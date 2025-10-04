@@ -49,6 +49,16 @@ The app will automatically use mock product data - no API configuration needed!
   - Accessible HTML structure
   - Handles empty states
 
+- **`addToCart(product, quantity)`** - Located in `src/context/CartContext.tsx`
+  - Adds products to shopping cart
+  - Validates availability
+  - Persists to localStorage
+
+- **`getCartTotal()`** - Located in `src/context/CartContext.tsx`
+  - Returns total cart price
+  - Auto-updates on changes
+  - Type-safe
+
 ### ✅ Production-Ready Features
 
 - **Secure API Key Handling** - Environment variables only
@@ -68,12 +78,48 @@ src/
 ├── components/
 │   ├── ProductGrid.tsx         ← renderProductGrid() here
 │   ├── ProductCard.tsx
+│   ├── Cart.tsx                ← Shopping cart UI
+│   ├── CartIcon.tsx            ← Cart icon with badge
 │   ├── LoadingSpinner.tsx
 │   └── ErrorMessage.tsx
-├── types/shopify.ts
+├── context/
+│   └── CartContext.tsx         ← addToCart(), getCartTotal()
+├── types/
+│   ├── shopify.ts
+│   └── cart.ts
 ├── utils/mockData.ts
 └── App.tsx
 ```
+
+## Shopping Cart Features
+
+### How to Use
+
+1. **Add Items**: Click "Add to Cart" on any product card
+2. **View Cart**: Click the cart icon (🛒) in the header
+3. **Adjust Quantities**: Use +/- buttons or type directly
+4. **Remove Items**: Click the trash icon 🗑️
+5. **Clear All**: Click "Clear Cart" button
+6. **Close Cart**: Click X, backdrop, or press Escape
+7. **Persistence**: Cart saves automatically to localStorage
+
+### Available Functions
+
+```typescript
+import { useCart } from './context/CartContext';
+
+const {
+  cart,              // Current cart state
+  addToCart,         // Add product to cart
+  removeFromCart,    // Remove item from cart
+  updateQuantity,    // Update item quantity
+  clearCart,         // Clear all items
+  getCartTotal,      // Get total price
+  getItemCount       // Get total item count
+} = useCart();
+```
+
+**📖 See [CART_DOCUMENTATION.md](CART_DOCUMENTATION.md) for complete cart documentation**
 
 ## Accessibility Testing
 

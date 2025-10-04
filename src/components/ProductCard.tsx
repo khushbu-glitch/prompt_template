@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ShopifyProduct } from '../types/shopify';
 import { formatPrice } from '../api/shopify';
+import { useCart } from '../context/CartContext';
 
 interface ProductCardProps {
   product: ShopifyProduct;
@@ -9,11 +10,30 @@ interface ProductCardProps {
 /**
  * ProductCard Component
  * Displays individual product information with accessibility features
+ * Includes shopping cart integration
  */
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { addToCart } = useCart();
+  const [isAdding, setIsAdding] = useState(false);
+  
   const mainImage = product.images.edges[0]?.node;
   const price = product.priceRange.minVariantPrice;
   const formattedPrice = formatPrice(price.amount, price.currencyCode);
+
+  /**
+   * Handles adding product to cart with visual feedback
+   */
+  const handleAddToCart = () => {
+    if (!product.availableForSale) return;
+    
+    setIsAdding(true);
+    addToCart(product, 1);
+    
+    // Reset button state after animation
+    setTimeout(() => {
+      setIsAdding(false);
+    }, 1000);
+  };
 
   return (
     <article
@@ -64,11 +84,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </span>
 
           <button
-            className="product-card__button"
-            disabled={!product.availableForSale}
+            className={`product-card__button ${isAdding ? 'product-card__button--adding' : ''}`}
+            disabled={!product.availableForSale || isAdding}
+            onClick={handleAddToCart}
             aria-label={`Add ${product.title} to cart`}
+            aria-live="polite"
           >
-            {product.availableForSale ? 'Add to Cart' : 'Unavailable'}
+            {isAdding ? '✓ Added!' : product.availableForSale ? 'Add to Cart' : 'Unavailable'}
           </button>
         </div>
       </div>
